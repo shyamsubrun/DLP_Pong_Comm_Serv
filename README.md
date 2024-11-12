@@ -1,36 +1,42 @@
-
-
-**Connexion Multijoueur pour Jeu Pong - (2024-2025)**  
-**Module** : Communication Réseau - Projet Python Sockets
+**Jeu Pong Multijoueur avec Connexion Client-Serveur - (2024-2025)**  
+**Module** : Communication Réseau et Programmation Multithreadée - Projet Python Sockets
 ---
 ### Description
-Ce projet vise à connecter un jeu Pong existant à un serveur, permettant aux utilisateurs de jouer en multijoueur sur plusieurs ordinateurs en réseau local. L'objectif est de transformer une expérience de jeu solo en une expérience de jeu interactive en temps réel, en utilisant une architecture client-serveur basée sur des sockets.
+Ce projet a pour objectif de transformer un jeu Pong existant en une application multijoueur interactive en temps réel. En se basant sur une architecture client-serveur, cette application permet à plusieurs utilisateurs, connectés à travers un réseau local, de jouer ensemble. La mise en réseau repose sur des sockets TCP, avec une gestion de la synchronisation de la balle, des raquettes, et des scores en utilisant Python.
 
 ### Spécifications Techniques
 - **Langage** : Python
-- **Technologies** : 
-  - **Sockets TCP** : Communication entre les clients et le serveur pour synchroniser les mouvements et les scores.
-  - **Architecture Client-Serveur** : Le serveur gère les positions de la balle, les scores et les mouvements des raquettes, et les transmet à tous les clients connectés.
-- **Outils de Modélisation** : 
-  - Diagrammes de séquence pour visualiser les interactions entre le client et le serveur.
-  - Schéma d'architecture pour structurer les composants principaux de l'application.
+- **Technologies de Communication** : 
+  - **Sockets TCP** : Assurent la communication entre le serveur et les clients en temps réel.
+  - **Multithreading** : Chaque client est géré par un thread distinct sur le serveur pour maintenir une interaction continue et fluide sans interruption.
+- **Architecture** : 
+  - **Client-Serveur** : Le serveur central gère la logique de jeu, notamment les mouvements de la balle, la détection des collisions, et la mise à jour des scores, tandis que les clients se chargent de l'affichage et des interactions de l'utilisateur.
+- **Modélisation** : 
+  - **Schéma d'Architecture** : Visualise l'interaction entre le serveur et plusieurs clients, mettant en évidence les flux de données (position de la balle, mouvements des raquettes, score).
+  - **Diagramme de Séquence** : Décrit les étapes des échanges de données entre client et serveur pour chaque action (connexion, déconnexion, mouvement, collision).
 
-### Fonctionnalités
-- **Jeu en Multijoueur** : Connecter plusieurs joueurs sur le même serveur pour jouer ensemble en temps réel.
-- **Synchronisation des Mouvements** : Transmission des mouvements de chaque raquette et de la balle en continu pour assurer une expérience de jeu fluide et réactive.
-- **Gestion des Scores** : Mise à jour automatique des scores lorsque la balle sort de l’écran, avec réinitialisation de la balle.
-- **Détection de Collisions** : Gestion des collisions entre la balle et les raquettes pour simuler des rebonds réalistes.
-- **Déconnexion Sécurisée** : Gestion des déconnexions pour permettre aux joueurs de quitter la partie sans perturber les autres joueurs.
+### Fonctionnalités de Mise en Réseau
+- **Connexion Multijoueur en Réseau** : Les utilisateurs peuvent se connecter à un serveur central, ce qui leur permet de jouer ensemble sur des ordinateurs distincts, en partageant la même session de jeu.
+- **Synchronisation des Mouvements et de la Balle** : Le serveur diffuse continuellement la position de la balle et les mouvements des raquettes, garantissant une synchronisation en temps réel pour tous les joueurs.
+- **Détection de Collisions en Temps Réel** : Le serveur détecte et gère les collisions entre la balle et les raquettes, simulant un rebond de la balle pour une expérience de jeu réaliste.
+- **Gestion des Scores Partagés** : Le serveur suit les scores des joueurs et les diffuse à chaque client lorsqu’un point est marqué, permettant aux utilisateurs de voir le score mis à jour en temps réel.
+- **Déconnexion Sécurisée et Gestion des Erreurs Réseau** : En cas de déconnexion d’un joueur, le serveur ajuste les connexions restantes et gère la fermeture de la session de jeu.
 
 ### Structure de Données
 - **Données Transmises** :
-  - **Position de la Balle** : Coordonnées X et Y, transmises par le serveur à chaque client.
-  - **Positions des Raquettes** : Coordonnées des raquettes gauche et droite, mises à jour en temps réel.
-  - **Scores** : Suivi des points pour chaque joueur, mis à jour après chaque point marqué.
+  - **Position de la Balle** : Coordonnées X et Y, diffusées par le serveur pour synchroniser l’affichage entre tous les clients.
+  - **Positions des Raquettes** : Coordonnées de la raquette gauche et droite, envoyées par les clients et répercutées par le serveur aux autres joueurs.
+  - **Scores** : Maintien des scores pour chaque joueur, mis à jour en temps réel dès qu’un point est marqué.
 
 ### Remarques
-- **Objectif de la transformation** : Transformer un jeu local en une expérience multijoueur synchronisée via un serveur central, tout en garantissant la réactivité et la fluidité de l'expérience de jeu.
+- **Objectif de la Connexion Réseau** : Transformer le jeu Pong en une expérience multijoueur interactive en utilisant une architecture réseau avec des sockets TCP, tout en garantissant la réactivité de l’expérience de jeu.
 - **Documentation et Modélisation** : 
-  - **Schéma d'Architecture** : Décrit les composants principaux (client, serveur) et les flux de données entre eux.
-  - **Diagrammes de Séquence** : Illustrent les interactions et la synchronisation des données entre le client et le serveur pour les principales actions (connexion, déconnexion, mouvement, collision).
-- **Tests et Débogage** : Mise en place de tests en réseau local pour évaluer les performances et la réactivité du jeu en multijoueur.
+  - **Schéma d'Architecture** : Illustrant le flux de communication entre clients et serveur pour la gestion en temps réel des positions de la balle et des raquettes.
+  - **Diagramme de Séquence** : Détaillant les étapes d’interaction entre client et serveur pour chaque action importante (connexion, mouvement, rebond).
+- **Tests de Performance et Résilience** : Tests en conditions réelles pour évaluer la performance de la communication réseau et vérifier la fluidité de la synchronisation des actions multijoueurs.
+
+### Code du Projet
+Le projet comprend trois composants principaux :
+1. **Client (`PongClient`)** : Se connecte au serveur, envoie les actions du joueur (mouvements de raquette), reçoit les mises à jour en temps réel (positions de la balle et des raquettes), et gère l’interface graphique du jeu.
+2. **Logique du Jeu (`PongGame`)** : Responsable de l'affichage de la balle, des raquettes et des scores ; se met à jour en fonction des données reçues du serveur.
+3. **Serveur (`PongServer`)** : Gère la logique centrale du jeu, incluant les mises à jour de la balle, la détection de collision, la gestion des scores et la diffusion des données à tous les clients connectés via un système de sockets multithreadé.
