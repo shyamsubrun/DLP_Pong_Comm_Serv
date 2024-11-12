@@ -30,21 +30,27 @@ class PongGame:
             self.canvas.move(self.left_paddle, 0, 20)
             self.client.send_data("MOVE LEFT DOWN")
 
+  
     def update_from_server(self, data):
         # Traiter les messages reçus du serveur pour mettre à jour l'état du jeu
-        if "MOVE LEFT UP" in data:
+        if data.startswith("MOVE LEFT UP"):
             self.canvas.move(self.left_paddle, 0, -20)
-        elif "MOVE LEFT DOWN" in data:
+        elif data.startswith("MOVE LEFT DOWN"):
             self.canvas.move(self.left_paddle, 0, 20)
-        elif "MOVE RIGHT UP" in data:
+        elif data.startswith("MOVE RIGHT UP"):
             self.canvas.move(self.right_paddle, 0, -20)
-        elif "MOVE RIGHT DOWN" in data:
+        elif data.startswith("MOVE RIGHT DOWN"):
             self.canvas.move(self.right_paddle, 0, 20)
-        elif "BALL" in data:
-            # Mettre à jour la position de la balle
-            _, x, y = data.split()
-            x, y = int(x), int(y)
-            self.canvas.coords(self.ball, x-10, y-10, x+10, y+10)
+        elif data.startswith("BALL"):
+            # Vérifie si le message est bien sous la forme "BALL x y"
+            try:
+                _, x, y = data.split()
+                x, y = int(x), int(y)
+                self.canvas.coords(self.ball, x-10, y-10, x+10, y+10)
+            except ValueError:
+                print("Erreur de format dans les données reçues :", data)
+
+    # ... autres méthodes et code ...
 
     def run_game(self):
         self.window.mainloop()

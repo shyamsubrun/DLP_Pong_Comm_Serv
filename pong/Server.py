@@ -27,14 +27,15 @@ class PongServer:
                 data = client_socket.recv(1024).decode('utf-8')
                 if not data:
                     break
-                # Diffuser les mouvements de la balle et des raquettes aux autres clients
+                # Diffuser les mouvements des raquettes aux autres clients
                 self.broadcast(data, client_socket)
             except ConnectionResetError:
                 break
         self.clients.remove(client_socket)
         client_socket.close()
 
-    def broadcast(self, message, sender_socket):
+    def broadcast(self, message, sender_socket=None):
+        """ Diffuse un message à tous les clients sauf l'expéditeur """
         for client in self.clients:
             if client != sender_socket:
                 try:
@@ -57,7 +58,7 @@ class PongServer:
 
             # Envoyer la position de la balle à tous les clients
             ball_data = f"BALL {self.ball_position[0]} {self.ball_position[1]}"
-            self.broadcast(ball_data, None)
+            self.broadcast(ball_data)
 
             time.sleep(0.03)  # Mettre à jour la balle toutes les 30 ms
 
