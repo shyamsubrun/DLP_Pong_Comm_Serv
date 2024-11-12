@@ -1,10 +1,8 @@
-Voici une description structurée pour le projet de connexion d'un jeu à un serveur pour jouer en multijoueur :
 
----
 
 **Connexion Multijoueur pour Jeu Pong - (2024-2025)**  
 **Module** : Communication Réseau - Projet Python Sockets
-
+---
 ### Description
 Ce projet vise à connecter un jeu Pong existant à un serveur, permettant aux utilisateurs de jouer en multijoueur sur plusieurs ordinateurs en réseau local. L'objectif est de transformer une expérience de jeu solo en une expérience de jeu interactive en temps réel, en utilisant une architecture client-serveur basée sur des sockets.
 
