@@ -1,42 +1,50 @@
-import threading
-import re
-import time
-import socket
+import tkinter as tk
 
-class ClientListener(threading.Thread):
-    def __init__(self, server, client_socket, address):
-        super(ClientListener, self).__init__()
-        self.server = server
-        self.socket = client_socket
-        self.address = address
-        self.listening = True
-        self.username = "No username"
+class PongGame:
+    def __init__(self, client):
+        self.client = client
+        self.window = tk.Tk()
+        self.window.title("Pong")
+        self.canvas = tk.Canvas(self.window, width=600, height=400, bg="black")
+        self.canvas.pack()
 
-    def run(self):
-        while self.listening:
-            try:
-                data = self.socket.recv(1024).decode('UTF-8')
-                if data:
-                    self.handle_msg(data)
-                else:
-                    self.quit()
-            except socket.error:
-                print("Unable to receive data")
-                self.quit()
-            time.sleep(0.1)
+        # Initialiser les éléments du jeu
+        self.ball = self.canvas.create_oval(290, 190, 310, 210, fill="white")
+        self.left_paddle = self.canvas.create_rectangle(10, 150, 20, 250, fill="white")
+        self.right_paddle = self.canvas.create_rectangle(580, 150, 590, 250, fill="white")
+        
+        # Lancer la mise à jour graphique et les contrôles
+        self.window.bind("<KeyPress>", self.move_paddle)
 
-    def quit(self):
-        self.listening = False
-        self.socket.close()
-        self.server.remove_socket(self.socket)
-        self.server.echo(f"{self.username} has quit.\n")
+    def move_paddle(self, event):
+        if event.keysym == "Up":
+            self.canvas.move(self.right_paddle, 0, -20)
+            self.client.send_data("MOVE RIGHT UP")
+        elif event.keysym == "Down":
+            self.canvas.move(self.right_paddle, 0, 20)
+            self.client.send_data("MOVE RIGHT DOWN")
+        elif event.keysym == "w":
+            self.canvas.move(self.left_paddle, 0, -20)
+            self.client.send_data("MOVE LEFT UP")
+        elif event.keysym == "s":
+            self.canvas.move(self.left_paddle, 0, 20)
+            self.client.send_data("MOVE LEFT DOWN")
 
-    def handle_msg(self, data):
-        username_result = re.search('^USERNAME (.*)$', data)
-        if username_result:
-            self.username = username_result.group(1)
-            self.server.echo(f"{self.username} has joined.\n")
-        elif data == "QUIT":
-            self.quit()
-        else:
-            self.server.echo(data)
+    def update_from_server(self, data):
+        # Traiter les messages reçus du serveur pour mettre à jour l'état du jeu
+        if "MOVE LEFT UP" in data:
+            self.canvas.move(self.left_paddle, 0, -20)
+        elif "MOVE LEFT DOWN" in data:
+            self.canvas.move(self.left_paddle, 0, 20)
+        elif "MOVE RIGHT UP" in data:
+            self.canvas.move(self.right_paddle, 0, -20)
+        elif "MOVE RIGHT DOWN" in data:
+            self.canvas.move(self.right_paddle, 0, 20)
+        elif "BALL" in data:
+            # Mettre à jour la position de la balle
+            _, x, y = data.split()
+            x, y = int(x), int(y)
+            self.canvas.coords(self.ball, x-10, y-10, x+10, y+10)
+
+    def run_game(self):
+        self.window.mainloop()
