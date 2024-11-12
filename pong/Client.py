@@ -1,78 +1,79 @@
 import socket
 import threading
-import time
-import re
 import tkinter as tk
+
+LARGEUR = 600
+HAUTEUR = 400
 
 class PongClient:
     def __init__(self, username, server, port):
         self.username = username
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((server, port))
-        self.send(f"USERNAME {username}")
-        self.listening = True
         self.init_ui()
-        self.listen_thread = threading.Thread(target=self.listener)
+        self.listening = True
+        self.listen_thread = threading.Thread(target=self.receive_data)
         self.listen_thread.start()
 
     def init_ui(self):
         self.root = tk.Tk()
-        self.root.title(f"Pong Game - {self.username}")
-        self.canvas = tk.Canvas(self.root, width=600, height=400, bg="black")
+        self.root.title(f"Pong - {self.username}")
+        self.canvas = tk.Canvas(self.root, width=LARGEUR, height=HAUTEUR, bg="black")
         self.canvas.pack()
-        self.paddle = self.canvas.create_rectangle(50, 150, 60, 250, fill="white")
-        self.ball = self.canvas.create_oval(290, 190, 310, 210, fill="white")
+
+        # Raquettes
+        self.raquette = self.canvas.create_rectangle(
+            10, HAUTEUR // 2 - 50, 20, HAUTEUR // 2 + 50, fill="white"
+        )
+        self.opponent_raquette = self.canvas.create_rectangle(
+            LARGEUR - 20, HAUTEUR // 2 - 50, LARGEUR - 10, HAUTEUR // 2 + 50, fill="white"
+        )
+
+        # Balle
+        self.balle = self.canvas.create_oval(
+            LARGEUR // 2 - 10, HAUTEUR // 2 - 10, LARGEUR // 2 + 10, HAUTEUR // 2 + 10, fill="white"
+        )
+
         self.canvas.bind_all("<KeyPress-Up>", lambda e: self.move_paddle(-10))
         self.canvas.bind_all("<KeyPress-Down>", lambda e: self.move_paddle(10))
-        self.root.after(30, self.update)
+
+        self.root.after(30, self.update_ui)
         self.root.mainloop()
 
-    def move_paddle(self, delta_y):
-        self.canvas.move(self.paddle, 0, delta_y)
-        pos = self.canvas.coords(self.paddle)
-        self.send(f"MOVE_PADDLE {pos}")
+    def move_paddle(self, dy):
+        self.canvas.move(self.raquette, 0, dy)
+        pos = self.canvas.coords(self.raquette)
+        data = f"MOVE_PADDLE {pos[1]} {pos[3]}"
+        self.send(data)
 
-    def update(self):
-        self.canvas.move(self.ball, 5, 5)
-        pos = self.canvas.coords(self.ball)
-        self.send(f"MOVE_BALL {pos}")
-        self.root.after(30, self.update)
+    def update_ui(self):
+        # Mettre à jour les éléments du jeu en fonction des données reçues
+        self.root.after(30, self.update_ui)
 
-    def listener(self):
+    def receive_data(self):
         while self.listening:
-            data = ""
             try:
                 data = self.socket.recv(1024).decode('UTF-8')
                 if data:
-                    self.handle_msg(data)
+                    self.handle_server_data(data)
             except socket.error:
-                print("Unable to receive data")
+                print("Disconnected from server.")
                 self.listening = False
-            time.sleep(0.1)
 
-    def send(self, message):
+    def handle_server_data(self, data):
+        parts = data.split()
+        if parts[0] == "BALL":
+            x, y = float(parts[1]), float(parts[2])
+            self.canvas.coords(self.balle, x - 10, y - 10, x + 10, y + 10)
+
+    def send(self, data):
         try:
-            if not re.match('^USERNAME', message):
-                message = f"{self.username}: {message}"
-            self.socket.sendall(message.encode("UTF-8"))
+            self.socket.sendall(data.encode('UTF-8'))
         except socket.error:
-            print("Unable to send message")
-
-    def handle_msg(self, data):
-        print(f"Received: {data}")
-        if data == "QUIT":
-            self.listening = False
-        else:
-            parts = data.split()
-            if parts[0] == "MOVE_PADDLE":
-                x1, y1, x2, y2 = map(int, parts[1:])
-                self.canvas.coords(self.paddle, x1, y1, x2, y2)
-            elif parts[0] == "MOVE_BALL":
-                x1, y1, x2, y2 = map(int, parts[1:])
-                self.canvas.coords(self.ball, x1, y1, x2, y2)
+            print("Failed to send data.")
 
 if __name__ == "__main__":
     username = input("Enter username: ")
-    server = input("Enter server address: ")
-    port = int(input("Enter server port: "))
-    client = PongClient(username, server, port)
+    server = input("Enter server IP: ")
+    port = int(input("Enter port: "))
+    PongClient(username, server, port)

@@ -1,41 +1,53 @@
 import socket
-import sys
+import threading
 import time
-from client_thread import ClientListener
+import random
+from ClientThread import ClientListener
 
-class Server:
+# Dimensions du jeu
+LARGEUR = 600
+HAUTEUR = 400
+VITESSE_BALLE_X = 5
+VITESSE_BALLE_Y = 5
+
+class PongServer:
     def __init__(self, port):
         self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listener.bind(('', port))
-        self.listener.listen(5)
+        self.listener.listen(2)
         print(f"Listening on port {port}")
-        self.clients_sockets = []
+        self.clients = []
+        self.balle_pos = [LARGEUR // 2, HAUTEUR // 2]
+        self.vitesse_balle_x = VITESSE_BALLE_X * random.choice([-1, 1])
+        self.vitesse_balle_y = VITESSE_BALLE_Y * random.choice([-1, 1])
 
     def run(self):
-        while True:
-            print("Waiting for new clients...")
-            try:
-                client_socket, client_address = self.listener.accept()
-            except socket.error:
-                sys.exit("Cannot connect clients")
-            self.clients_sockets.append(client_socket)
-            print("Starting thread for client:", client_address)
-            client_thread = ClientListener(self, client_socket, client_address)
+        print("Server running...")
+        while len(self.clients) < 2:
+            client_socket, client_address = self.listener.accept()
+            print(f"Client connected: {client_address}")
+            client_thread = ClientListener(self, client_socket)
             client_thread.start()
-            time.sleep(0.1)
+            self.clients.append(client_thread)
 
-    def remove_socket(self, socket):
-        if socket in self.clients_sockets:
-            self.clients_sockets.remove(socket)
+        while True:
+            self.update_game()
+            time.sleep(0.03)
 
-    def echo(self, data):
-        print("Broadcasting:", data)
-        for sock in self.clients_sockets:
-            try:
-                sock.sendall(data.encode("UTF-8"))
-            except socket.error:
-                print("Failed to send message")
+    def update_game(self):
+        # Déplacement de la balle
+        self.balle_pos[0] += self.vitesse_balle_x
+        self.balle_pos[1] += self.vitesse_balle_y
+
+        # Collision avec le haut et le bas
+        if self.balle_pos[1] <= 0 or self.balle_pos[1] >= HAUTEUR:
+            self.vitesse_balle_y *= -1
+
+        # Envoie de la position de la balle aux clients
+        data = f"BALL {self.balle_pos[0]} {self.balle_pos[1]}"
+        for client in self.clients:
+            client.send(data)
 
 if __name__ == "__main__":
-    server = Server(59001)
+    server = PongServer(59001)
     server.run()
