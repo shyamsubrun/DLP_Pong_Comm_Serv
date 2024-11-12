@@ -18,29 +18,40 @@ class PongGame:
 
     def move_paddle(self, event):
         if event.keysym == "Up":
-            self.canvas.move(self.right_paddle, 0, -20)
-            self.client.send_data("MOVE RIGHT UP")
+            # Déplacer la raquette droite, mais s'assurer qu'elle ne dépasse pas le bord supérieur (vide de 20px)
+            if self.canvas.coords(self.right_paddle)[1] > 20:  
+                self.canvas.move(self.right_paddle, 0, -22)
+                self.client.send_data("MOVE RIGHT UP")
         elif event.keysym == "Down":
-            self.canvas.move(self.right_paddle, 0, 20)
-            self.client.send_data("MOVE RIGHT DOWN")
+            # Déplacer la raquette droite, mais s'assurer qu'elle ne dépasse pas le bord inférieur (vide de 20px)
+            if self.canvas.coords(self.right_paddle)[3] < 380:  # 400 (hauteur de l'écran) - 20 (vide)
+                self.canvas.move(self.right_paddle, 0, 20)
+                self.client.send_data("MOVE RIGHT DOWN")
         elif event.keysym == "w":
-            self.canvas.move(self.left_paddle, 0, -20)
-            self.client.send_data("MOVE LEFT UP")
+            # Déplacer la raquette gauche, mais s'assurer qu'elle ne dépasse pas le bord supérieur (vide de 20px)
+            if self.canvas.coords(self.left_paddle)[1] > 20:  
+                self.canvas.move(self.left_paddle, 0, -20)
+                self.client.send_data("MOVE LEFT UP")
         elif event.keysym == "s":
-            self.canvas.move(self.left_paddle, 0, 20)
-            self.client.send_data("MOVE LEFT DOWN")
+            # Déplacer la raquette gauche, mais s'assurer qu'elle ne dépasse pas le bord inférieur (vide de 20px)
+            if self.canvas.coords(self.left_paddle)[3] < 380:  # 400 (hauteur de l'écran) - 20 (vide)
+                self.canvas.move(self.left_paddle, 0, 20)
+                self.client.send_data("MOVE LEFT DOWN")
 
-  
     def update_from_server(self, data):
         # Traiter les messages reçus du serveur pour mettre à jour l'état du jeu
         if data.startswith("MOVE LEFT UP"):
-            self.canvas.move(self.left_paddle, 0, -20)
+            if self.canvas.coords(self.left_paddle)[1] > 20:  # Vide de 20 pixels
+                self.canvas.move(self.left_paddle, 0, -20)
         elif data.startswith("MOVE LEFT DOWN"):
-            self.canvas.move(self.left_paddle, 0, 20)
+            if self.canvas.coords(self.left_paddle)[3] < 380:  # Vide de 20 pixels
+                self.canvas.move(self.left_paddle, 0, 20)
         elif data.startswith("MOVE RIGHT UP"):
-            self.canvas.move(self.right_paddle, 0, -20)
+            if self.canvas.coords(self.right_paddle)[1] > 20:  # Vide de 20 pixels
+                self.canvas.move(self.right_paddle, 0, -20)
         elif data.startswith("MOVE RIGHT DOWN"):
-            self.canvas.move(self.right_paddle, 0, 20)
+            if self.canvas.coords(self.right_paddle)[3] < 380:  # Vide de 20 pixels
+                self.canvas.move(self.right_paddle, 0, 20)
         elif data.startswith("BALL"):
             # Vérifie si le message est bien sous la forme "BALL x y"
             try:
@@ -49,8 +60,6 @@ class PongGame:
                 self.canvas.coords(self.ball, x-10, y-10, x+10, y+10)
             except ValueError:
                 print("Erreur de format dans les données reçues :", data)
-
-    # ... autres méthodes et code ...
 
     def run_game(self):
         self.window.mainloop()
