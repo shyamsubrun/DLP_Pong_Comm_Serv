@@ -38,7 +38,7 @@ class PongClient:
 
 if __name__ == "__main__":
     username = input("Entrez votre nom d'utilisateur : ")
-    server_ip = input("Entrez l'IP du serveur : ")
+    server_ip = "localhost"
     client = PongClient(username, server_ip, 59001)
 
     # Lancer l'interface graphique et le jeu

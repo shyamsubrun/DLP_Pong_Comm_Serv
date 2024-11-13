@@ -18,48 +18,62 @@ class PongGame:
 
     def move_paddle(self, event):
         if event.keysym == "Up":
-            # Déplacer la raquette droite, mais s'assurer qu'elle ne dépasse pas le bord supérieur (vide de 20px)
-            if self.canvas.coords(self.right_paddle)[1] > 20:  
+            if self.canvas.coords(self.right_paddle)[1] > 20:
                 self.canvas.move(self.right_paddle, 0, -22)
                 self.client.send_data("MOVE RIGHT UP")
+                print("Commande envoyée : MOVE RIGHT UP")  # Vérification côté client
         elif event.keysym == "Down":
-            # Déplacer la raquette droite, mais s'assurer qu'elle ne dépasse pas le bord inférieur (vide de 20px)
-            if self.canvas.coords(self.right_paddle)[3] < 380:  # 400 (hauteur de l'écran) - 20 (vide)
+            if self.canvas.coords(self.right_paddle)[3] < 380:
                 self.canvas.move(self.right_paddle, 0, 20)
                 self.client.send_data("MOVE RIGHT DOWN")
+                print("Commande envoyée : MOVE RIGHT DOWN")
         elif event.keysym == "w":
-            # Déplacer la raquette gauche, mais s'assurer qu'elle ne dépasse pas le bord supérieur (vide de 20px)
-            if self.canvas.coords(self.left_paddle)[1] > 20:  
+            if self.canvas.coords(self.left_paddle)[1] > 20:
                 self.canvas.move(self.left_paddle, 0, -20)
                 self.client.send_data("MOVE LEFT UP")
+                print("Commande envoyée : MOVE LEFT UP")
         elif event.keysym == "s":
-            # Déplacer la raquette gauche, mais s'assurer qu'elle ne dépasse pas le bord inférieur (vide de 20px)
-            if self.canvas.coords(self.left_paddle)[3] < 380:  # 400 (hauteur de l'écran) - 20 (vide)
+            if self.canvas.coords(self.left_paddle)[3] < 380:
                 self.canvas.move(self.left_paddle, 0, 20)
                 self.client.send_data("MOVE LEFT DOWN")
+                print("Commande envoyée : MOVE LEFT DOWN")
 
     def update_from_server(self, data):
-        # Traiter les messages reçus du serveur pour mettre à jour l'état du jeu
         if data.startswith("MOVE LEFT UP"):
-            if self.canvas.coords(self.left_paddle)[1] > 20:  # Vide de 20 pixels
+            if self.canvas.coords(self.left_paddle)[1] > 20:
                 self.canvas.move(self.left_paddle, 0, -20)
         elif data.startswith("MOVE LEFT DOWN"):
-            if self.canvas.coords(self.left_paddle)[3] < 380:  # Vide de 20 pixels
+            if self.canvas.coords(self.left_paddle)[3] < 380:
                 self.canvas.move(self.left_paddle, 0, 20)
         elif data.startswith("MOVE RIGHT UP"):
-            if self.canvas.coords(self.right_paddle)[1] > 20:  # Vide de 20 pixels
+            if self.canvas.coords(self.right_paddle)[1] > 20:
                 self.canvas.move(self.right_paddle, 0, -20)
         elif data.startswith("MOVE RIGHT DOWN"):
-            if self.canvas.coords(self.right_paddle)[3] < 380:  # Vide de 20 pixels
+            if self.canvas.coords(self.right_paddle)[3] < 380:
                 self.canvas.move(self.right_paddle, 0, 20)
         elif data.startswith("BALL"):
-            # Vérifie si le message est bien sous la forme "BALL x y"
             try:
                 _, x, y = data.split()
                 x, y = int(x), int(y)
                 self.canvas.coords(self.ball, x-10, y-10, x+10, y+10)
             except ValueError:
                 print("Erreur de format dans les données reçues :", data)
+        elif data.startswith("UPDATE LEFT PADDLE"):
+            parts = data.split()
+            if len(parts) == 3:
+                _, _, position = parts
+                position = int(position)
+                self.canvas.coords(self.left_paddle, 10, position, 20, position + 100)
+            else:
+                print("Format incorrect pour UPDATE LEFT PADDLE:", data)
+        elif data.startswith("UPDATE RIGHT PADDLE"):
+            parts = data.split()
+            if len(parts) == 3:
+                _, _, position = parts
+                position = int(position)
+                self.canvas.coords(self.right_paddle, 580, position, 590, position + 100)
+            else:
+                print("Format incorrect pour UPDATE RIGHT PADDLE:", data)
 
     def run_game(self):
         self.window.mainloop()
