@@ -50,8 +50,6 @@ class Client():
             LARGEUR//2 + 10, HAUTEUR//2 + 10,
             fill="white"
         )
-        self.vitesse_balle_x = VITESSE_BALLE_X * random.choice([-1, 1])
-        self.vitesse_balle_y = VITESSE_BALLE_Y * random.choice([-1, 1])
 
         # Scores
         self.score_gauche = 0
@@ -74,7 +72,8 @@ class Client():
             "Up": False,
             "Down": False
         }
-
+        self.vitesse_balle_x = 0
+        self.vitesse_balle_y = 0
         # Démarrer le jeu
         self.jeu_en_cours = True
         self.mouvement()
@@ -116,6 +115,7 @@ class Client():
         else:
             action = data
         if action.startswith("PRESS"):
+            print("test from handel")
             key = action.split(" ")[1]
             if key in self.touches:
                 self.touches[key] = True
@@ -123,13 +123,14 @@ class Client():
             key = action.split(" ")[1]
             if key in self.touches:
                 self.touches[key] = False
-        
+        elif action.startswith("BALL"):
+            self.vitesse_balle_x = int(action.split(" ")[1])
+            self.vitesse_balle_y = int(action.split(" ")[2])
         elif data=="QUIT":
             self.tidy_up()
         elif data=="":
             self.tidy_up()
             
- 
 
     def mouvement_raquette(self, event):
         if event.keysym in self.touches:

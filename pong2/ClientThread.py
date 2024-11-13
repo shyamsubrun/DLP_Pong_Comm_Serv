@@ -4,7 +4,7 @@ import re
 import time
 
 class ClientListener(threading.Thread):
-
+    
     def __init__(self, server, socket, address):
         super(ClientListener, self).__init__()
         self.server= server
@@ -12,6 +12,7 @@ class ClientListener(threading.Thread):
         self.address= address
         self.listening= True
         self.username= "No username"
+        
 
     def run(self):
         while self.listening:
