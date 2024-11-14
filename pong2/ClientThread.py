@@ -7,11 +7,11 @@ class ClientListener(threading.Thread):
     
     def __init__(self, server, socket, address):
         super(ClientListener, self).__init__()
-        self.server= server
-        self.socket= socket
-        self.address= address
-        self.listening= True
-        self.username= "No username"
+        self.server = server
+        self.socket = socket
+        self.address = address
+        self.listening = True
+        self.username = "No username"
         
 
     def run(self):
@@ -33,15 +33,17 @@ class ClientListener(threading.Thread):
 
     def handle_msg(self, data):
         print(self.address, "sent :", data)
-        username_result = re.search('^USERNAME (.*)$', data)
-        if username_result:
-            self.username = username_result.group(1)
-            self.server.echo("{0} has joined.\n".format(self.username))
+        if data.startswith("PRESS") or data.startswith("RELEASE"):
+            # Récupération du rôle du client (gauche ou droite)
+            role = self.server.client_roles[self.socket]
+            # Relais de la commande au client avec l'information sur la raquette
+            for sock in self.server.clients_sockets:
+                try:
+                    sock.sendall(f"{role}_{data}".encode("UTF-8"))
+                except socket.error:
+                    print("Cannot send the message")
+        # Autres commandes (par exemple, QUIT)
         elif data == "QUIT":
             self.quit()
         elif data == "":
             self.quit()
-        # Appel de BAllecho si "BALL" est dans data
-        else:
-            print("this is from handle_msg echo", data)
-            self.server.echo(data)

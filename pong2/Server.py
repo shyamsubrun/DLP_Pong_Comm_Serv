@@ -20,29 +20,38 @@ class Server():
         print("Listening on port", port)
         
         self.clients_sockets = []
-        self.ball_thread_started = False  # Pour s'assurer qu'on ne crée qu'un seul thread pour la balle
+        self.client_roles = {}  # Dictionnaire pour assigner les rôles aux clients
+        self.ball_thread_started = False
         self.ball_thread_running = True
+
     def run(self):
-        print("test from run")
         while True:
-            print("Listening for new clients...")
             try:
                 (client_socket, client_address) = self.listener.accept()
             except socket.error:
                 sys.exit("Cannot connect clients")
                 
+            # Attribution du rôle (raquette gauche ou droite)
+            if len(self.clients_sockets) == 0:
+                self.client_roles[client_socket] = "left"
+            elif len(self.clients_sockets) == 1:
+                self.client_roles[client_socket] = "right"
+            else:
+                client_socket.close()
+                continue  # Limite le jeu à deux clients
+
             self.clients_sockets.append(client_socket)
-            print("Start the thread for client:", client_address)
+            print(f"Client {client_address} assigned role: {self.client_roles[client_socket]}")
             
+            client_thread = ClientListener(self, client_socket, client_address)
+            client_thread.start()
+
             if len(self.clients_sockets) > 1 and not self.ball_thread_started:
                 self.ball_thread_running = True
-                print("Starting the ball movement thread")
                 ball_thread = threading.Thread(target=self.sendBallPosition, daemon=True)
                 ball_thread.start()
-                client_thread = ClientListener(self, client_socket, client_address)
-                client_thread.start()
-                time.sleep(0.1)
                 self.ball_thread_started = True
+
     
     def remove_socket(self, socket):
         if socket in self.clients_sockets:
@@ -56,7 +65,7 @@ class Server():
                     sock.sendall(self.pos_ball.encode("UTF-8"))
                 except socket.error:
                     print("Cannot send the message")
-            time.sleep(200)  # Ajout d'une pause pour éviter la surcharge et permettre les autres actions
+            time.sleep(10)  # Ajout d'une pause pour éviter la surcharge et permettre les autres actions
 
     def echo(self, data):
         

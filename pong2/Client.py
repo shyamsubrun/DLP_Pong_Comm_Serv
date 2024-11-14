@@ -110,26 +110,20 @@ class Client():
         self.socket.close()
 
     def handle_msg(self, data):
-        if ": " in data:
-            action = data.split(": ", 1)[1]
-        else:
-            action = data
-        if action.startswith("PRESS"):
-            print("test from handel")
-            key = action.split(" ")[1]
-            if key in self.touches:
-                self.touches[key] = True
-        elif action.startswith("RELEASE"):
-            key = action.split(" ")[1]
-            if key in self.touches:
-                self.touches[key] = False
-        elif action.startswith("BALL"):
-            self.vitesse_balle_x = int(action.split(" ")[1])
-            self.vitesse_balle_y = int(action.split(" ")[2])
-        elif data=="QUIT":
-            self.tidy_up()
-        elif data=="":
-            self.tidy_up()
+    if "left_PRESS" in data or "right_PRESS" in data:
+        key = data.split("_PRESS ")[1]
+        if key in self.touches:
+            self.touches[key] = True
+    elif "left_RELEASE" in data or "right_RELEASE" in data:
+        key = data.split("_RELEASE ")[1]
+        if key in self.touches:
+            self.touches[key] = False
+    elif action.startswith("BALL"):
+        self.vitesse_balle_x = int(action.split(" ")[1])
+        self.vitesse_balle_y = int(action.split(" ")[2])
+    elif data == "QUIT":
+        self.tidy_up()
+
             
 
     def mouvement_raquette(self, event):
@@ -178,11 +172,11 @@ class Client():
                 self.mise_a_jour_score()
                 self.reinitialiser_balle()
 
-            self.master.after(30, self.mouvement)
+            self.master.after(15, self.mouvement)
 
     def deplacer_raquette(self, raquette, dy):
         pos = self.canvas.coords(raquette)
-        if pos[1] + dy >= 0 and pos[3] + dy <= HAUTEUR:
+        if pos[1] + dy >= 10 and pos[3] + dy <= HAUTEUR-10:
             self.canvas.move(raquette, 0, dy)
 
     def collision(self, raquette, pos_balle):
@@ -215,7 +209,7 @@ class Client():
 
 if __name__ == "__main__":
     username= input("username: ")
-    server= "localhost"
+    server= "172.16.8.87"
     port= 59001
     message= ""
     root = tk.Tk()
