@@ -41,5 +41,7 @@ class ClientListener(threading.Thread):
             self.quit()
         elif data == "":
             self.quit()
+        # Appel de BAllecho si "BALL" est dans data
         else:
+            print("this is from handle_msg echo", data)
             self.server.echo(data)

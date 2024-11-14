@@ -134,6 +134,7 @@ class Client():
 
     def mouvement_raquette(self, event):
         if event.keysym in self.touches:
+            print("this is from press",event.keysym )
             self.send(f"PRESS {event.keysym}")
 
     def stop_raquette(self, event):
@@ -210,8 +211,7 @@ class Client():
             LARGEUR//2 - 10, HAUTEUR//2 - 10,
             LARGEUR//2 + 10, HAUTEUR//2 + 10
         )
-        self.vitesse_balle_x = VITESSE_BALLE_X * random.choice([-1, 1])
-        self.vitesse_balle_y = VITESSE_BALLE_Y * random.choice([-1, 1])
+        self.send(f"BALL")
 
 if __name__ == "__main__":
     username= input("username: ")

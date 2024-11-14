@@ -21,8 +21,9 @@ class Server():
         
         self.clients_sockets = []
         self.ball_thread_started = False  # Pour s'assurer qu'on ne crée qu'un seul thread pour la balle
-
+        self.ball_thread_running = True
     def run(self):
+        print("test from run")
         while True:
             print("Listening for new clients...")
             try:
@@ -33,9 +34,8 @@ class Server():
             self.clients_sockets.append(client_socket)
             print("Start the thread for client:", client_address)
             
-            
-            
             if len(self.clients_sockets) > 1 and not self.ball_thread_started:
+                self.ball_thread_running = True
                 print("Starting the ball movement thread")
                 ball_thread = threading.Thread(target=self.sendBallPosition, daemon=True)
                 ball_thread.start()
@@ -43,14 +43,13 @@ class Server():
                 client_thread.start()
                 time.sleep(0.1)
                 self.ball_thread_started = True
-                
-
+    
     def remove_socket(self, socket):
         if socket in self.clients_sockets:
             self.clients_sockets.remove(socket)
-
+    
     def sendBallPosition(self):
-        while True:
+        while self.ball_thread_running:
             self.pos_ball = "BALL " + str(self.vitesse_balle_x) + " " + str(self.vitesse_balle_y) + " "
             for sock in self.clients_sockets:
                 try:
@@ -60,12 +59,23 @@ class Server():
             time.sleep(200)  # Ajout d'une pause pour éviter la surcharge et permettre les autres actions
 
     def echo(self, data):
+        
         print("Echoing:", data)
-        for sock in self.clients_sockets:
-            try:
-                sock.sendall(data.encode("UTF-8"))
-            except socket.error:
-                print("Cannot send the message")
+        if "BALL" in data:
+            self.vitesse_balle_x = VITESSE_BALLE_X * random.choice([-1, 1])
+            self.vitesse_balle_y = VITESSE_BALLE_Y * random.choice([-1, 1])
+            self.pos_ball = "BALL " + str(self.vitesse_balle_x) + " " + str(self.vitesse_balle_y) + " "
+            for sock in self.clients_sockets:
+                try:
+                    sock.sendall(self.pos_ball.encode("UTF-8"))
+                except socket.error:
+                    print("Cannot send the message")
+        else :
+            for sock in self.clients_sockets:
+                try:
+                    sock.sendall(data.encode("UTF-8"))
+                except socket.error:
+                    print("Cannot send the message")
 
 if __name__ == "__main__":
     server = Server(59001)
