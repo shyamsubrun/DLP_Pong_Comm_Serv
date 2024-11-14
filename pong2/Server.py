@@ -33,14 +33,13 @@ class Server():
                 
             self.clients_sockets.append(client_socket)
             print("Start the thread for client:", client_address)
-            
+            client_thread = ClientListener(self, client_socket, client_address)
+            client_thread.start()
             if len(self.clients_sockets) > 1 and not self.ball_thread_started:
                 self.ball_thread_running = True
                 print("Starting the ball movement thread")
                 ball_thread = threading.Thread(target=self.sendBallPosition, daemon=True)
                 ball_thread.start()
-                client_thread = ClientListener(self, client_socket, client_address)
-                client_thread.start()
                 time.sleep(0.1)
                 self.ball_thread_started = True
     

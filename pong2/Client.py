@@ -196,7 +196,7 @@ class Client():
 
     def mise_a_jour_score(self):
         self.canvas.itemconfig(self.affichage_score, text=f"{self.score_gauche}   {self.score_droite}")
-        if self.score_gauche == 100 or self.score_droite == 100:
+        if self.score_gauche == 3 or self.score_droite == 3:
             self.jeu_en_cours = False
             self.canvas.create_text(
                 LARGEUR//2, HAUTEUR//2,
