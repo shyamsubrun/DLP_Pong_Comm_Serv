@@ -88,6 +88,8 @@ class Server():
                 return
             if len(self.joueurs) > 1 and self.joueurs[1] in data and last_word in ["Up", "Down"]:
                 return
+            if len(self.joueurs) > 2 and self.joueurs[2] in data : 
+                return
             else :
                 for sock in self.clients_sockets:
                     try:
