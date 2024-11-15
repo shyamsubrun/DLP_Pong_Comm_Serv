@@ -18,7 +18,7 @@ class Server():
         self.listener.bind(('', port))
         self.listener.listen(1)
         print("Listening on port", port)
-        
+        self.joueurs = []
         self.clients_sockets = []
         self.ball_thread_started = False  # Pour s'assurer qu'on ne crée qu'un seul thread pour la balle
         self.ball_thread_running = True
@@ -58,8 +58,11 @@ class Server():
             time.sleep(200)  # Ajout d'une pause pour éviter la surcharge et permettre les autres actions
 
     def echo(self, data):
-        
+        parts_data = data.split(" ")
+        last_word = parts_data[-1] if parts_data else ""
         print("Echoing:", data)
+        if "joined" in data : 
+            self.joueurs.append(data.split(" ")[0])
         if "BALL" in data:
             self.vitesse_balle_x = VITESSE_BALLE_X * random.choice([-1, 1])
             self.vitesse_balle_y = VITESSE_BALLE_Y * random.choice([-1, 1])
@@ -70,11 +73,17 @@ class Server():
                 except socket.error:
                     print("Cannot send the message")
         else :
-            for sock in self.clients_sockets:
-                try:
-                    sock.sendall(data.encode("UTF-8"))
-                except socket.error:
-                    print("Cannot send the message")
+            
+            if len(self.joueurs) > 0 and self.joueurs[0] in data and last_word in ["z", "s"]:
+                return
+            if len(self.joueurs) > 1 and self.joueurs[1] in data and last_word in ["Up", "Down"]:
+                return
+            else :
+                for sock in self.clients_sockets:
+                    try:
+                        sock.sendall(data.encode("UTF-8"))
+                    except socket.error:
+                        print("Cannot send the message")
 
 if __name__ == "__main__":
     server = Server(59001)
