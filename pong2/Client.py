@@ -129,7 +129,9 @@ class Client():
             self.vitesse_balle_y = int(action.split(" ")[2])
         elif action.startswith("PUT"): 
             print("scoreJoueur",action.split(" ")[1])
-            self.mise_a_jour_score(int(action.split(" ")[1]))
+            self.score_gauche = int(action.split(" ")[1])
+            self.score_droite = int(action.split(" ")[2])
+            self.mise_a_jour_score()
         elif data=="QUIT":
             self.tidy_up()
         elif data=="":
@@ -198,13 +200,13 @@ class Client():
             pos_raquette[3] > pos_balle[1]
         )
 
-    def mise_a_jour_score(self , js):
-        if js ==1 : 
-            self.score_droite += 1
-        elif js == 2 : 
-            self.score_gauche += 1
+    def mise_a_jour_score(self ):
+        # if js ==1 : 
+        #     self.score_droite += 1
+        # elif js == 2 : 
+        #     self.score_gauche += 1
         self.canvas.itemconfig(self.affichage_score, text=f"{self.score_gauche}   {self.score_droite}")
-        if self.score_gauche == 10 or self.score_droite == 10:
+        if self.score_gauche == 3 or self.score_droite == 3:
             self.jeu_en_cours = False
             self.canvas.create_text(
                 LARGEUR//2, HAUTEUR//2,

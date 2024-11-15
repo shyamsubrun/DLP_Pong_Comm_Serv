@@ -18,6 +18,8 @@ class Server():
         self.listener.bind(('', port))
         self.listener.listen(1)
         print("Listening on port", port)
+        self.j1 = 0
+        self.j2 = 0
         self.joueurs = []
         self.clients_sockets = []
         self.ball_thread_started = False  # Pour s'assurer qu'on ne crée qu'un seul thread pour la balle
@@ -69,7 +71,11 @@ class Server():
             self.vitesse_balle_x = VITESSE_BALLE_X * random.choice([-1, 1])
             self.vitesse_balle_y = VITESSE_BALLE_Y * random.choice([-1, 1])
             self.pos_ball = "BALL " + str(self.vitesse_balle_x) + " " + str(self.vitesse_balle_y) + " "
-            self.put_joueur = "PUT " + parts_data[2]+ " "
+            if parts_data[2] == "1" :
+                self.j1+=1
+            elif parts_data[2] == "2" :
+                self.j2+=1
+            self.put_joueur = "PUT " + str(self.j1) +  " " + str(self.j2)+ " "
             for sock in self.clients_sockets:
                 try:
                     sock.sendall(self.pos_ball.encode("UTF-8"))
