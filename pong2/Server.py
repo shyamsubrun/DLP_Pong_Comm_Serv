@@ -36,6 +36,7 @@ class Server():
             client_thread = ClientListener(self, client_socket, client_address)
             client_thread.start()
             if len(self.clients_sockets) > 1 and not self.ball_thread_started:
+                time.sleep(3)
                 self.ball_thread_running = True
                 print("Starting the ball movement thread")
                 ball_thread = threading.Thread(target=self.sendBallPosition, daemon=True)
@@ -59,6 +60,7 @@ class Server():
 
     def echo(self, data):
         parts_data = data.split(" ")
+        print(parts_data)
         last_word = parts_data[-1] if parts_data else ""
         print("Echoing:", data)
         if "joined" in data : 
@@ -67,9 +69,11 @@ class Server():
             self.vitesse_balle_x = VITESSE_BALLE_X * random.choice([-1, 1])
             self.vitesse_balle_y = VITESSE_BALLE_Y * random.choice([-1, 1])
             self.pos_ball = "BALL " + str(self.vitesse_balle_x) + " " + str(self.vitesse_balle_y) + " "
+            self.put_joueur = "PUT " + parts_data[2]+ " "
             for sock in self.clients_sockets:
                 try:
                     sock.sendall(self.pos_ball.encode("UTF-8"))
+                    sock.sendall(self.put_joueur.encode("UTF-8"))
                 except socket.error:
                     print("Cannot send the message")
         else :

@@ -110,6 +110,7 @@ class Client():
         self.socket.close()
 
     def handle_msg(self, data):
+        print("data from Client handle",data)
         if ": " in data:
             action = data.split(": ", 1)[1]
         else:
@@ -126,6 +127,9 @@ class Client():
         elif action.startswith("BALL"):
             self.vitesse_balle_x = int(action.split(" ")[1])
             self.vitesse_balle_y = int(action.split(" ")[2])
+        elif action.startswith("PUT"): 
+            print("scoreJoueur",action.split(" ")[1])
+            self.mise_a_jour_score(int(action.split(" ")[1]))
         elif data=="QUIT":
             self.tidy_up()
         elif data=="":
@@ -170,13 +174,13 @@ class Client():
 
             # Sortie de la balle à gauche ou à droite
             if pos_balle[0] <= 0:
-                self.score_droite += 1
-                self.mise_a_jour_score()
-                self.reinitialiser_balle()
+                # self.score_droite += 1
+                # self.mise_a_jour_score()
+                self.reinitialiser_balle(1)
             elif pos_balle[2] >= LARGEUR:
-                self.score_gauche += 1
-                self.mise_a_jour_score()
-                self.reinitialiser_balle()
+                # self.score_gauche += 1
+                # self.mise_a_jour_score()
+                self.reinitialiser_balle(2)
 
             self.master.after(30, self.mouvement)
 
@@ -194,7 +198,11 @@ class Client():
             pos_raquette[3] > pos_balle[1]
         )
 
-    def mise_a_jour_score(self):
+    def mise_a_jour_score(self , js):
+        if js ==1 : 
+            self.score_droite += 1
+        elif js == 2 : 
+            self.score_gauche += 1
         self.canvas.itemconfig(self.affichage_score, text=f"{self.score_gauche}   {self.score_droite}")
         if self.score_gauche == 10 or self.score_droite == 10:
             self.jeu_en_cours = False
@@ -205,13 +213,13 @@ class Client():
                 fill="white"
             )
 
-    def reinitialiser_balle(self):
+    def reinitialiser_balle(self, js):
         self.canvas.coords(
             self.balle,
             LARGEUR//2 - 10, HAUTEUR//2 - 10,
             LARGEUR//2 + 10, HAUTEUR//2 + 10
         )
-        self.send(f"BALL")
+        self.send(f"BALL {js}")
 
 if __name__ == "__main__":
     username= input("username: ")
